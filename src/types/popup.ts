@@ -1,52 +1,52 @@
 
 // Define the position options for popups
-export type PopupPosition = 
-  | 'top-left' 
-  | 'top-center' 
-  | 'top-right' 
-  | 'center-left' 
-  | 'center' 
-  | 'center-right' 
-  | 'bottom-left' 
-  | 'bottom-center' 
+export type PopupPosition =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'center-left'
+  | 'center'
+  | 'center-right'
+  | 'bottom-left'
+  | 'bottom-center'
   | 'bottom-right';
 
 // Define the animation options for popups
-export type PopupAnimation = 
-  | 'fade-in' 
-  | 'scale-in' 
-  | 'slide-in-top' 
-  | 'slide-in-right' 
-  | 'slide-in-bottom' 
-  | 'slide-in-left' 
+export type PopupAnimation =
+  | 'fade-in'
+  | 'scale-in'
+  | 'slide-in-top'
+  | 'slide-in-right'
+  | 'slide-in-bottom'
+  | 'slide-in-left'
   | 'none';
 
 // Define the trigger types for popups
-export type TriggerType = 
-  | 'onLoad' 
-  | 'onDelay' 
+export type TriggerType =
+  | 'onLoad'
+  | 'onDelay'
   | 'onClick';
 
 // Define the element types available for popups
-export type ElementType = 
-  | 'text' 
-  | 'button' 
-  | 'input' 
+export type ElementType =
+  | 'text'
+  | 'button'
+  | 'input'
   | 'image';
 
 // Define the input types for form elements
-export type InputType = 
-  | 'text' 
-  | 'email' 
-  | 'number' 
-  | 'password' 
+export type InputType =
+  | 'text'
+  | 'email'
+  | 'number'
+  | 'password'
   | 'textarea';
 
 // Define the button action types
-export type ButtonAction = 
-  | 'close' 
-  | 'link' 
-  | 'submit' 
+export type ButtonAction =
+  | 'close'
+  | 'link'
+  | 'submit'
   | 'custom';
 
 // Define the close button position options
@@ -91,7 +91,10 @@ export interface LayoutColumn {
   ratio: string;
   elements: PopupElement[];
 }
-
+export interface LayoutRow {
+  id: string;
+  columns: LayoutColumn[];
+}
 // Define the layout structure
 export interface PopupLayout {
   rows: number;

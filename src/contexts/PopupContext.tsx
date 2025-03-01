@@ -5,7 +5,8 @@ import {
   PopupElement,
   ElementType,
   defaultPopupTemplate,
-  LayoutColumn
+  LayoutColumn,
+  LayoutRow
 } from "@/types/popup";
 import {
   getOrCreateTemplates,
@@ -22,6 +23,9 @@ interface PopupContextType {
   isPreviewVisible: boolean;
   isCodeVisible: boolean;
   selectedElementId: string | null;
+  isLoggedIn: boolean;
+  setIsLoggedIn: (value: boolean) => void;
+
   setCurrentTemplate: (template: PopupTemplate) => void;
   updateCurrentTemplate: (updates: Partial<PopupTemplate>) => void;
   addElement: (type: ElementType, columnId: string) => void;
@@ -38,9 +42,11 @@ interface PopupContextType {
   addColumn: () => void;
   updateColumnWidth: (columnId: string, width: string) => void;
   deleteColumn: (columnId: string) => void;
+
 }
 
 const PopupContext = createContext<PopupContextType | undefined>(undefined);
+
 
 export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [templates, setTemplates] = useState<PopupTemplate[]>([]);
@@ -48,6 +54,7 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
   const [isCodeVisible, setIsCodeVisible] = useState(false);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -201,6 +208,7 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       };
     });
   };
+
 
   const deleteColumn = (columnId: string) => {
     setCurrentTemplate(prev => {
@@ -430,7 +438,6 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setIsPreviewVisible(prev => !prev);
   };
 
-  // Toggle code view
   const toggleCodeView = () => {
     setIsCodeVisible(prev => !prev);
   };
@@ -441,6 +448,8 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     isPreviewVisible,
     isCodeVisible,
     selectedElementId,
+    isLoggedIn,
+    setIsLoggedIn,
     setCurrentTemplate,
     updateCurrentTemplate,
     addElement,
@@ -456,7 +465,7 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     toggleCodeView,
     addColumn,
     updateColumnWidth,
-    deleteColumn
+    deleteColumn,
   };
 
   return (
