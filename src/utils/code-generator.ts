@@ -1,4 +1,4 @@
-import { PopupTemplate, PopupElement, ButtonAction, LayoutRow, LayoutColumn } from "@/types/popup";
+import { LayoutColumn, LayoutRow, PopupElement, PopupTemplate } from "@/types/popup";
 
 /**
  * Generate CSS for popup elements
@@ -261,8 +261,44 @@ const generateElementHTML = async (element: PopupElement): Promise<string> => {
   }
 
   switch (element.type) {
-    // ... other cases remain the same ...
+    case 'text':
+      html += `<div id="${elementId}" class="popup-element popup-text">${element.content || ''}</div>`;
+      break;
 
+    case 'button':
+      const action = element.action || 'close';
+      let actionAttr = '';
+
+      switch (action) {
+        case 'close':
+          actionAttr = 'onclick="closePopup()"';
+          break;
+        case 'link':
+          if (element.actionUrl || element.url) {
+            actionAttr = `onclick="window.open('${element.actionUrl || element.url}', '_blank')"`;
+          }
+          break;
+        case 'submit':
+          actionAttr = 'type="submit"';
+          break;
+        case 'custom':
+          actionAttr = 'onclick="customButtonAction()"';
+          break;
+      }
+
+      html += `<button id="${elementId}" class="popup-element popup-button" ${actionAttr}>${element.label || 'Button'}</button>`;
+      break;
+
+    case 'input':
+      const inputType = element.inputType || 'text';
+      const required = element.required ? 'required' : '';
+
+      if (inputType === 'textarea') {
+        html += `<textarea id="${elementId}" class="popup-element popup-input" placeholder="${element.placeholder || ''}" ${required}></textarea>`;
+      } else {
+        html += `<input id="${elementId}" class="popup-element popup-input" type="${inputType}" placeholder="${element.placeholder || ''}" ${required}>`;
+      }
+      break;
     case 'image':
       // Handle image URL for export
       let imageUrl = element.imageUrl || '';
