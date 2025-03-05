@@ -8,12 +8,11 @@ const Editor: React.FC = () => {
     const navigate = useNavigate();
     const { isLoggedIn } = usePopup();
 
-    // Redirect if not logged in
     useEffect(() => {
         if (!isLoggedIn) {
             navigate("/login");
         }
-    }, [isLoggedIn, navigate]);
+    }, [isLoggedIn]);
 
     return <AppLayout />;
 };

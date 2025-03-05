@@ -29,12 +29,11 @@ const Dashboard: React.FC = () => {
         cloneTemplate
     } = usePopup();
 
-    // Redirect if not logged in
     useEffect(() => {
         if (!isLoggedIn) {
             navigate("/login");
         }
-    }, [isLoggedIn, navigate]);
+    }, [isLoggedIn]);
 
     const handleCreateTemplate = () => {
         createTemplate();

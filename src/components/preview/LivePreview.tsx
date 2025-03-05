@@ -58,18 +58,18 @@ const getAnimationClass = (animation: PopupAnimation): string => {
 const getAlignmentStyles = (element: any): React.CSSProperties => {
   const alignment = element.styles.alignment;
   if (!alignment) return {};
-  
+
   const styles: React.CSSProperties = {};
-  
+
   // For text elements, use textAlign
   if (element.type === 'text') {
     styles.textAlign = alignment;
-  } 
+  }
   // For other elements, use flexbox to align the content
   else {
     styles.display = 'flex';
     styles.flexDirection = 'column';
-    
+
     switch (alignment) {
       case 'left':
         styles.alignItems = 'flex-start';
@@ -82,54 +82,54 @@ const getAlignmentStyles = (element: any): React.CSSProperties => {
         break;
     }
   }
-  
+
   return styles;
 };
 
 const LivePreview: React.FC = () => {
-  const { 
-    currentTemplate, 
-    selectElement, 
-    selectedElementId 
+  const {
+    currentTemplate,
+    selectElement,
+    selectedElementId
   } = usePopup();
-  
-  const { 
-    popupStyles, 
-    overlayStyles, 
-    closeButton, 
-    layout, 
-    animation 
+
+  const {
+    popupStyles,
+    overlayStyles,
+    closeButton,
+    layout,
+    animation
   } = currentTemplate;
-  
+
   const overlayRef = useRef<HTMLDivElement>(null);
-  
+
   // Handle clicking outside elements to deselect
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
-        overlayRef.current && 
-        overlayRef.current.contains(e.target as Node) && 
+        overlayRef.current &&
+        overlayRef.current.contains(e.target as Node) &&
         (e.target as HTMLElement).classList.contains('preview-overlay')
       ) {
         selectElement(null);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [selectElement]);
-  
+
   const handleElementClick = (
-    e: React.MouseEvent<Element>, 
+    e: React.MouseEvent<Element>,
     elementId: string
   ) => {
     e.stopPropagation();
     selectElement(elementId);
   };
-  
+
   const renderElement = (element: any, idx: number) => {
     const isSelected = selectedElementId === element.id;
-    
+
     // Combine base styles with alignment styles
     const elementStyles: React.CSSProperties = {
       color: element.styles.textColor,
@@ -148,13 +148,13 @@ const LivePreview: React.FC = () => {
       transition: 'outline 0.2s ease, transform 0.2s ease',
       ...getAlignmentStyles(element)
     };
-    
+
     const elementClass = `preview-element preview-${element.type} ${isSelected ? 'selected' : ''}`;
-    
+
     switch (element.type) {
       case 'text':
         return (
-          <div 
+          <div
             key={element.id}
             className={elementClass}
             style={elementStyles}
@@ -163,7 +163,7 @@ const LivePreview: React.FC = () => {
             {element.content}
           </div>
         );
-        
+
       case 'button':
         // Create a wrapper div for buttons to handle alignment
         return (
@@ -172,11 +172,11 @@ const LivePreview: React.FC = () => {
             className={`${elementClass}-wrapper`}
             style={getAlignmentStyles(element)}
           >
-            <button 
+            <button
               className={elementClass}
               style={{
                 ...elementStyles,
-                display: 'inline-block', // Override the display from alignment styles
+                display: 'block',
                 alignItems: undefined, // Remove alignment styles that were copied
               }}
               onClick={(e) => handleElementClick(e, element.id)}
@@ -185,7 +185,7 @@ const LivePreview: React.FC = () => {
             </button>
           </div>
         );
-        
+
       case 'input':
         // Create a wrapper div for inputs to handle alignment
         return (
@@ -195,23 +195,23 @@ const LivePreview: React.FC = () => {
             style={getAlignmentStyles(element)}
           >
             {element.inputType === 'textarea' ? (
-              <textarea 
+              <textarea
                 className={elementClass}
                 style={{
                   ...elementStyles,
-                  display: 'inline-block', // Override the display from alignment styles
+                  display: 'block', // Override the display from alignment styles
                   alignItems: undefined, // Remove alignment styles that were copied
                 }}
                 placeholder={element.placeholder}
                 onClick={(e) => handleElementClick(e, element.id)}
               />
             ) : (
-              <input 
+              <input
                 type={element.inputType}
                 className={elementClass}
                 style={{
                   ...elementStyles,
-                  display: 'inline-block', // Override the display from alignment styles
+                  display: 'block', // Override the display from alignment styles
                   alignItems: undefined, // Remove alignment styles that were copied
                 }}
                 placeholder={element.placeholder}
@@ -220,7 +220,7 @@ const LivePreview: React.FC = () => {
             )}
           </div>
         );
-        
+
       case 'image':
         // Create a wrapper div for images to handle alignment
         return (
@@ -233,12 +233,12 @@ const LivePreview: React.FC = () => {
               className={`${elementClass} relative`}
               style={{
                 ...elementStyles,
-                display: 'inline-block', // Override the display from alignment styles
+                display: 'block', // Override the display from alignment styles
                 alignItems: undefined, // Remove alignment styles that were copied
               }}
               onClick={(e) => handleElementClick(e, element.id)}
             >
-              <img 
+              <img
                 src={element.imageUrl || 'https://via.placeholder.com/200'}
                 alt={element.alt || 'Preview image'}
                 className="w-full h-full object-cover"
@@ -246,12 +246,12 @@ const LivePreview: React.FC = () => {
             </div>
           </div>
         );
-        
+
       default:
         return null;
     }
   };
-  
+
   // Setup popup container styles
   const popupContainerStyles: React.CSSProperties = {
     backgroundColor: popupStyles.background,
@@ -266,7 +266,7 @@ const LivePreview: React.FC = () => {
     position: 'relative',
     overflowY: 'auto'
   };
-  
+
   // Setup overlay styles
   const previewOverlayStyles: React.CSSProperties = {
     ...getPositionStyles(popupStyles.position),
@@ -274,19 +274,41 @@ const LivePreview: React.FC = () => {
     opacity: parseFloat(overlayStyles.opacity || '1')
   };
 
+  // Handle case where layout structure is invalid
+  if (!layout.rows || !Array.isArray(layout.rows) || layout.rows.length === 0) {
+    return (
+      <div
+        ref={overlayRef}
+        className="preview-overlay w-full h-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-900"
+        style={previewOverlayStyles}
+      >
+        <div
+          className={`preview-popup ${getAnimationClass(animation)}`}
+          style={popupContainerStyles}
+        >
+          <div className="preview-content p-4 text-center">
+            <p className="text-muted-foreground">
+              Layout structure is invalid. Please add rows and columns to your template.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div 
+    <div
       ref={overlayRef}
       className="preview-overlay w-full h-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-900"
       style={previewOverlayStyles}
     >
-      <div 
+      <div
         className={`preview-popup ${getAnimationClass(animation)}`}
         style={popupContainerStyles}
       >
         {closeButton.enabled && closeButton.position === 'inside' && (
-          <button 
-            className="preview-close-button absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition-colors" 
+          <button
+            className="preview-close-button absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition-colors"
             style={{
               color: closeButton.styles.textColor,
               fontSize: closeButton.styles.fontSize,
@@ -298,25 +320,37 @@ const LivePreview: React.FC = () => {
             <X size={16} />
           </button>
         )}
-        
-        <div className="preview-content flex flex-wrap">
-          {layout.columns.map((column) => (
-            <div 
-              key={column.id}
-              className="preview-column"
-              style={{ 
-                width: column.ratio,
-                padding: '0 8px'
+
+        <div className="preview-content flex flex-col">
+          {layout.rows.map((row) => (
+            <div
+              key={row.id}
+              className="preview-row flex"
+              style={{
+                height: row.height || 'auto',
+                width: '100%',
               }}
             >
-              {column.elements.map((element, idx) => renderElement(element, idx))}
+              {row.columns && row.columns.map((column) => (
+                <div
+                  key={column.id}
+                  className="preview-column"
+                  style={{
+                    width: column.ratio,
+                    padding: '0 8px',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  {column.elements && column.elements.map((element, idx) => renderElement(element, idx))}
+                </div>
+              ))}
             </div>
           ))}
         </div>
       </div>
-      
+
       {closeButton.enabled && closeButton.position === 'outside' && (
-        <button 
+        <button
           className="preview-close-button absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
           style={{
             color: closeButton.styles.textColor,

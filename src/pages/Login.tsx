@@ -1,16 +1,16 @@
 
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { usePopup } from "@/contexts/PopupContext";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePopup } from "@/contexts/PopupContext";
 import { useToast } from "@/hooks/use-toast";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
-    const { setIsLoggedIn, isLoggedIn } = usePopup();
+    const { setIsLoggedIn } = usePopup();
     const { toast } = useToast();
 
     const [username, setUsername] = useState("");
@@ -22,14 +22,12 @@ const Login: React.FC = () => {
         setIsLoading(true);
 
         setTimeout(() => {
-            // Check dummy credentials
             if (username === "admin" && password === "admin") {
                 toast({
                     title: "Login successful",
                     description: "Welcome to Popup Builder!",
                     variant: "default",
                 });
-                localStorage.setItem("isLoggedIn", "true");
                 setIsLoggedIn(true);
                 navigate("/dashboard");
             } else {
@@ -44,11 +42,6 @@ const Login: React.FC = () => {
         }, 1000);
     };
 
-    useEffect(() => {
-        if (localStorage.getItem("isLoggedIn") === "true" || isLoggedIn) {
-            navigate("/dashboard");
-        }
-    }, [isLoggedIn]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">

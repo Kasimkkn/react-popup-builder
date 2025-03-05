@@ -1,11 +1,11 @@
 
 import React from "react";
-import { 
-  ChevronDown, 
-  FileCode, 
-  Eye, 
-  EyeOff, 
-  Save, 
+import {
+  ChevronDown,
+  FileCode,
+  Eye,
+  EyeOff,
+  Save,
   Plus,
   Download,
   Moon,
@@ -25,9 +25,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 
 const AppHeader: React.FC = () => {
-  const { 
-    currentTemplate, 
-    templates, 
+  const {
+    currentTemplate,
+    templates,
     saveCurrentTemplate,
     createTemplate,
     loadTemplate,
@@ -36,14 +36,14 @@ const AppHeader: React.FC = () => {
     isCodeVisible,
     toggleCodeView
   } = usePopup();
-  
+
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
 
-  const exportCode = () => {
-    const code = generatePopupCode(currentTemplate);
+  const exportCode = async () => {
+    const code = await generatePopupCode(currentTemplate);
     navigator.clipboard.writeText(code);
-    
+
     toast({
       title: "Code copied to clipboard",
       description: "You can now paste the code into your website",
@@ -55,7 +55,7 @@ const AppHeader: React.FC = () => {
     <header className="border-b border-border flex justify-between items-center py-3 px-4 bg-background h-14">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold mr-4">Popup Builder</h1>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="flex items-center gap-1 ml-2">
@@ -65,7 +65,7 @@ const AppHeader: React.FC = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
             {templates.map((template) => (
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 key={template.id}
                 onClick={() => loadTemplate(template.id)}
                 className={`${template.id === currentTemplate.id ? 'bg-muted' : ''}`}
@@ -80,7 +80,7 @@ const AppHeader: React.FC = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      
+
       <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -109,10 +109,10 @@ const AppHeader: React.FC = () => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
+
+        <Button
+          variant="outline"
+          size="sm"
           onClick={togglePreview}
           className="flex items-center gap-1"
         >
@@ -128,10 +128,10 @@ const AppHeader: React.FC = () => {
             </>
           )}
         </Button>
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
+
+        <Button
+          variant="outline"
+          size="sm"
           onClick={toggleCodeView}
           className="flex items-center gap-1"
         >
@@ -140,20 +140,20 @@ const AppHeader: React.FC = () => {
             {isCodeVisible ? "Hide Code" : "View Code"}
           </span>
         </Button>
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
+
+        <Button
+          variant="outline"
+          size="sm"
           onClick={exportCode}
           className="flex items-center gap-1"
         >
           <Download className="h-4 w-4" />
           <span className="hidden sm:inline">Export Code</span>
         </Button>
-        
-        <Button 
-          variant="default" 
-          size="sm" 
+
+        <Button
+          variant="default"
+          size="sm"
           onClick={saveCurrentTemplate}
           className="flex items-center gap-1"
         >

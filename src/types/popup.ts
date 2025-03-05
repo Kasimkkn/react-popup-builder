@@ -1,52 +1,51 @@
-
 // Define the position options for popups
-export type PopupPosition =
-  | 'top-left'
-  | 'top-center'
-  | 'top-right'
-  | 'center-left'
-  | 'center'
-  | 'center-right'
-  | 'bottom-left'
-  | 'bottom-center'
+export type PopupPosition = 
+  | 'top-left' 
+  | 'top-center' 
+  | 'top-right' 
+  | 'center-left' 
+  | 'center' 
+  | 'center-right' 
+  | 'bottom-left' 
+  | 'bottom-center' 
   | 'bottom-right';
 
 // Define the animation options for popups
-export type PopupAnimation =
-  | 'fade-in'
-  | 'scale-in'
-  | 'slide-in-top'
-  | 'slide-in-right'
-  | 'slide-in-bottom'
-  | 'slide-in-left'
+export type PopupAnimation = 
+  | 'fade-in' 
+  | 'scale-in' 
+  | 'slide-in-top' 
+  | 'slide-in-right' 
+  | 'slide-in-bottom' 
+  | 'slide-in-left' 
   | 'none';
 
 // Define the trigger types for popups
-export type TriggerType =
-  | 'onLoad'
-  | 'onDelay'
+export type TriggerType = 
+  | 'onLoad' 
+  | 'onDelay' 
   | 'onClick';
 
 // Define the element types available for popups
-export type ElementType =
-  | 'text'
-  | 'button'
-  | 'input'
+export type ElementType = 
+  | 'text' 
+  | 'button' 
+  | 'input' 
   | 'image';
 
 // Define the input types for form elements
-export type InputType =
-  | 'text'
-  | 'email'
-  | 'number'
-  | 'password'
+export type InputType = 
+  | 'text' 
+  | 'email' 
+  | 'number' 
+  | 'password' 
   | 'textarea';
 
 // Define the button action types
-export type ButtonAction =
-  | 'close'
-  | 'link'
-  | 'submit'
+export type ButtonAction = 
+  | 'close' 
+  | 'link' 
+  | 'submit' 
   | 'custom';
 
 // Define the close button position options
@@ -83,6 +82,7 @@ export interface PopupElement {
   imageUrl?: string;
   alt?: string;
   styles: ElementStyles;
+  url?: string; // Added for backwards compatibility
 }
 
 // Define a column in the layout
@@ -91,14 +91,17 @@ export interface LayoutColumn {
   ratio: string;
   elements: PopupElement[];
 }
+
+// Define a row in the layout
 export interface LayoutRow {
   id: string;
+  height?: string;
   columns: LayoutColumn[];
 }
+
 // Define the layout structure
 export interface PopupLayout {
-  rows: number;
-  columns: LayoutColumn[];
+  rows: LayoutRow[];
 }
 
 // Define the close button configuration
@@ -145,6 +148,80 @@ export interface PopupTemplate {
   animation: PopupAnimation;
 }
 
+// Define predefined column layout patterns
+export interface ColumnLayout {
+  id: string;
+  name: string;
+  columns: string[];
+  icon?: React.ReactNode;
+}
+
+export const predefinedColumnLayouts: ColumnLayout[] = [
+  {
+    id: '100',
+    name: 'Full Width',
+    columns: ['100%']
+  },
+  {
+    id: '50-50',
+    name: 'Two Equal',
+    columns: ['50%', '50%']
+  },
+  {
+    id: '33-33-33',
+    name: 'Three Equal',
+    columns: ['33.33%', '33.33%', '33.33%']
+  },
+  {
+    id: '25-25-25-25',
+    name: 'Four Equal',
+    columns: ['25%', '25%', '25%', '25%']
+  },
+  {
+    id: '70-30',
+    name: 'Wide Left',
+    columns: ['70%', '30%']
+  },
+  {
+    id: '30-70',
+    name: 'Wide Right',
+    columns: ['30%', '70%']
+  },
+  {
+    id: '33-66',
+    name: 'One-Third Left',
+    columns: ['33.33%', '66.67%']
+  },
+  {
+    id: '66-33',
+    name: 'One-Third Right',
+    columns: ['66.67%', '33.33%']
+  },
+  {
+    id: '25-50-25',
+    name: 'Center Focus',
+    columns: ['25%', '50%', '25%']
+  },
+  {
+    id: '20-60-20',
+    name: 'Strong Center',
+    columns: ['20%', '60%', '20%']
+  }
+];
+
+// Create default row with one column
+const createDefaultRow = (): LayoutRow => {
+  return {
+    id: crypto.randomUUID(),
+    height: "auto",
+    columns: [{
+      id: crypto.randomUUID(),
+      ratio: "100%",
+      elements: []
+    }]
+  };
+};
+
 // Default values for a new popup template
 export const defaultPopupTemplate: PopupTemplate = {
   id: crypto.randomUUID(),
@@ -164,49 +241,54 @@ export const defaultPopupTemplate: PopupTemplate = {
     opacity: "1"
   },
   layout: {
-    rows: 1,
-    columns: [
+    rows: [
       {
         id: crypto.randomUUID(),
-        ratio: "100%",
-        elements: [
+        height: "auto",
+        columns: [
           {
             id: crypto.randomUUID(),
-            type: "text",
-            content: "Welcome to our website!",
-            styles: {
-              textColor: "#1e293b",
-              fontSize: "18px",
-              fontWeight: "600",
-              alignment: "center",
-              margin: "0 0 16px 0"
-            }
-          },
-          {
-            id: crypto.randomUUID(),
-            type: "text",
-            content: "Subscribe to our newsletter to stay updated.",
-            styles: {
-              textColor: "#64748b",
-              fontSize: "14px",
-              alignment: "center",
-              margin: "0 0 16px 0"
-            }
-          },
-          {
-            id: crypto.randomUUID(),
-            type: "button",
-            label: "Subscribe",
-            action: "close",
-            styles: {
-              backgroundColor: "hsl(var(--primary))",
-              textColor: "#ffffff",
-              borderRadius: "4px",
-              padding: "8px 16px",
-              fontSize: "14px",
-              alignment: "center",
-              width: "auto"
-            }
+            ratio: "100%",
+            elements: [
+              {
+                id: crypto.randomUUID(),
+                type: "text",
+                content: "Welcome to our website!",
+                styles: {
+                  textColor: "#1e293b",
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  alignment: "center",
+                  margin: "0 0 16px 0"
+                }
+              },
+              {
+                id: crypto.randomUUID(),
+                type: "text",
+                content: "Subscribe to our newsletter to stay updated.",
+                styles: {
+                  textColor: "#64748b",
+                  fontSize: "14px",
+                  alignment: "center",
+                  margin: "0 0 16px 0"
+                }
+              },
+              {
+                id: crypto.randomUUID(),
+                type: "button",
+                label: "Subscribe",
+                action: "close",
+                styles: {
+                  backgroundColor: "#3b82f6", // Set default button color to blue
+                  textColor: "#ffffff",
+                  borderRadius: "4px",
+                  padding: "8px 16px",
+                  fontSize: "14px",
+                  alignment: "center",
+                  width: "auto"
+                }
+              }
+            ]
           }
         ]
       }
@@ -227,4 +309,11 @@ export const defaultPopupTemplate: PopupTemplate = {
     delay: "3"
   },
   animation: "fade-in"
+};
+
+// Helper function to create a layout with default structure
+export const createDefaultLayout = (): PopupLayout => {
+  return {
+    rows: [createDefaultRow()]
+  };
 };

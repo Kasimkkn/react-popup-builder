@@ -1,40 +1,10 @@
 
-import React from "react";
-import { 
-  Trash, 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight,
-  Link as LinkIcon,
-  MoveHorizontal,
-  ArrowUpDown,
-  Palette,
-  BoxSelect,
-  Type as TypeIcon
-} from "lucide-react";
-import { usePopup } from "@/contexts/PopupContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { 
-  ButtonAction, 
-  InputType 
-} from "@/types/popup";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,16 +16,44 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { usePopup } from "@/contexts/PopupContext";
+import {
+  ButtonAction,
+  InputType
+} from "@/types/popup";
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  ArrowUpDown,
+  BoxSelect,
+  Link as LinkIcon,
+  MoveHorizontal,
+  Trash,
+  Type as TypeIcon
+} from "lucide-react";
+import React from "react";
 
 const ElementSettings: React.FC = () => {
   const { currentTemplate, selectedElementId, updateElement, deleteElement, selectElement } = usePopup();
-  
+
   if (!selectedElementId) {
     return (
       <div className="text-center p-4">
@@ -65,12 +63,27 @@ const ElementSettings: React.FC = () => {
       </div>
     );
   }
-  
-  // Find the selected element in the template
-  const selectedElement = currentTemplate.layout.columns
-    .flatMap(column => column.elements)
-    .find(element => element.id === selectedElementId);
-  
+
+  // Find the selected element in the template - searching through all rows and columns
+  const findSelectedElement = () => {
+    if (!currentTemplate.layout.rows) return null;
+
+    for (const row of currentTemplate.layout.rows) {
+      if (!row.columns) continue;
+
+      for (const column of row.columns) {
+        if (!column.elements) continue;
+
+        const element = column.elements.find(el => el.id === selectedElementId);
+        if (element) return element;
+      }
+    }
+
+    return null;
+  };
+
+  const selectedElement = findSelectedElement();
+
   if (!selectedElement) {
     return (
       <div className="text-center p-4">
@@ -78,7 +91,7 @@ const ElementSettings: React.FC = () => {
       </div>
     );
   }
-  
+
   const handleTextAlignmentChange = (alignment: string) => {
     updateElement(selectedElementId, {
       styles: {
@@ -87,7 +100,7 @@ const ElementSettings: React.FC = () => {
       }
     });
   };
-  
+
   const handleDeleteElement = () => {
     deleteElement(selectedElementId);
   };
@@ -99,7 +112,7 @@ const ElementSettings: React.FC = () => {
     // Create an object URL for the uploaded file
     const imageUrl = URL.createObjectURL(file);
     updateElement(selectedElementId, { imageUrl });
-    
+
     // Show toast notification
     const event = new CustomEvent('toast', {
       detail: {
@@ -132,7 +145,7 @@ const ElementSettings: React.FC = () => {
           {getElementIcon()}
           <span className="capitalize">{selectedElement.type} Element</span>
         </h2>
-        
+
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
@@ -174,25 +187,25 @@ const ElementSettings: React.FC = () => {
               />
             </div>
           )}
-          
+
           {/* Button Element Content */}
           {selectedElement.type === 'button' && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="button-label">Button Text</Label>
-                <Input 
-                  id="button-label" 
-                  value={selectedElement.label || ''} 
+                <Input
+                  id="button-label"
+                  value={selectedElement.label || ''}
                   onChange={(e) => updateElement(selectedElementId, { label: e.target.value })}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="button-action">Action</Label>
                 <Select
                   value={selectedElement.action || 'close'}
-                  onValueChange={(value) => updateElement(selectedElementId, { 
-                    action: value as ButtonAction 
+                  onValueChange={(value) => updateElement(selectedElementId, {
+                    action: value as ButtonAction
                   })}
                 >
                   <SelectTrigger>
@@ -206,20 +219,20 @@ const ElementSettings: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {selectedElement.action === 'link' && (
                 <div className="space-y-2">
                   <Label htmlFor="button-url">URL</Label>
                   <div className="flex gap-2">
-                    <Input 
-                      id="button-url" 
-                      value={selectedElement.actionUrl || ''} 
+                    <Input
+                      id="button-url"
+                      value={selectedElement.actionUrl || ''}
                       onChange={(e) => updateElement(selectedElementId, { actionUrl: e.target.value })}
                       placeholder="https://example.com"
                     />
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
+                    <Button
+                      variant="outline"
+                      size="icon"
                       className="shrink-0"
                       type="button"
                     >
@@ -230,7 +243,7 @@ const ElementSettings: React.FC = () => {
               )}
             </>
           )}
-          
+
           {/* Input Element Content */}
           {selectedElement.type === 'input' && (
             <>
@@ -238,8 +251,8 @@ const ElementSettings: React.FC = () => {
                 <Label htmlFor="input-type">Input Type</Label>
                 <Select
                   value={selectedElement.inputType || 'text'}
-                  onValueChange={(value) => updateElement(selectedElementId, { 
-                    inputType: value as InputType 
+                  onValueChange={(value) => updateElement(selectedElementId, {
+                    inputType: value as InputType
                   })}
                 >
                   <SelectTrigger id="input-type">
@@ -254,35 +267,35 @@ const ElementSettings: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="input-placeholder">Placeholder</Label>
-                <Input 
-                  id="input-placeholder" 
-                  value={selectedElement.placeholder || ''} 
+                <Input
+                  id="input-placeholder"
+                  value={selectedElement.placeholder || ''}
                   onChange={(e) => updateElement(selectedElementId, { placeholder: e.target.value })}
                 />
               </div>
             </>
           )}
-          
+
           {/* Image Element Content */}
           {selectedElement.type === 'image' && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="image-url">Image URL</Label>
-                <Input 
-                  id="image-url" 
-                  value={selectedElement.imageUrl || ''} 
+                <Input
+                  id="image-url"
+                  value={selectedElement.imageUrl || ''}
                   onChange={(e) => updateElement(selectedElementId, { imageUrl: e.target.value })}
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
-              
+
               <div className="space-y-4">
                 <Label htmlFor="image-upload">Or Upload Image</Label>
-                <Input 
-                  id="image-upload" 
+                <Input
+                  id="image-upload"
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
@@ -290,20 +303,20 @@ const ElementSettings: React.FC = () => {
                 />
                 {selectedElement.imageUrl && (
                   <div className="mt-2 border rounded overflow-hidden w-full max-w-xs">
-                    <img 
-                      src={selectedElement.imageUrl} 
-                      alt="Preview" 
+                    <img
+                      src={selectedElement.imageUrl}
+                      alt="Preview"
                       className="w-full h-auto max-h-48 object-cover"
                     />
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="image-alt">Alt Text</Label>
-                <Input 
-                  id="image-alt" 
-                  value={selectedElement.alt || ''} 
+                <Input
+                  id="image-alt"
+                  value={selectedElement.alt || ''}
                   onChange={(e) => updateElement(selectedElementId, { alt: e.target.value })}
                   placeholder="Image description"
                 />
@@ -321,19 +334,19 @@ const ElementSettings: React.FC = () => {
                 <Label htmlFor="text-color">Text Color</Label>
                 <div className="flex gap-2">
                   <div className="w-8 h-8 rounded border overflow-hidden">
-                    <input 
-                      type="color" 
-                      id="text-color" 
-                      value={selectedElement.styles.textColor || '#000000'} 
-                      onChange={(e) => updateElement(selectedElementId, { 
+                    <input
+                      type="color"
+                      id="text-color"
+                      value={selectedElement.styles.textColor || '#000000'}
+                      onChange={(e) => updateElement(selectedElementId, {
                         styles: { ...selectedElement.styles, textColor: e.target.value }
                       })}
                       className="w-10 h-10 -ml-1 -mt-1"
                     />
                   </div>
-                  <Input 
+                  <Input
                     value={selectedElement.styles.textColor || ''}
-                    onChange={(e) => updateElement(selectedElementId, { 
+                    onChange={(e) => updateElement(selectedElementId, {
                       styles: { ...selectedElement.styles, textColor: e.target.value }
                     })}
                     placeholder="#000000"
@@ -342,25 +355,25 @@ const ElementSettings: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             {selectedElement.type === 'button' && (
               <div className="space-y-2">
                 <Label htmlFor="button-bg-color">Background</Label>
                 <div className="flex gap-2">
                   <div className="w-8 h-8 rounded border overflow-hidden">
-                    <input 
-                      type="color" 
-                      id="button-bg-color" 
-                      value={selectedElement.styles.backgroundColor || '#000000'} 
-                      onChange={(e) => updateElement(selectedElementId, { 
+                    <input
+                      type="color"
+                      id="button-bg-color"
+                      value={selectedElement.styles.backgroundColor || '#000000'}
+                      onChange={(e) => updateElement(selectedElementId, {
                         styles: { ...selectedElement.styles, backgroundColor: e.target.value }
                       })}
                       className="w-10 h-10 -ml-1 -mt-1"
                     />
                   </div>
-                  <Input 
+                  <Input
                     value={selectedElement.styles.backgroundColor || ''}
-                    onChange={(e) => updateElement(selectedElementId, { 
+                    onChange={(e) => updateElement(selectedElementId, {
                       styles: { ...selectedElement.styles, backgroundColor: e.target.value }
                     })}
                     placeholder="#000000"
@@ -369,15 +382,15 @@ const ElementSettings: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             {/* Font size for text and buttons */}
             {(selectedElement.type === 'text' || selectedElement.type === 'button') && (
               <div className="space-y-2">
                 <Label htmlFor="font-size">Font Size</Label>
-                <Input 
-                  id="font-size" 
-                  value={selectedElement.styles.fontSize || ''} 
-                  onChange={(e) => updateElement(selectedElementId, { 
+                <Input
+                  id="font-size"
+                  value={selectedElement.styles.fontSize || ''}
+                  onChange={(e) => updateElement(selectedElementId, {
                     styles: { ...selectedElement.styles, fontSize: e.target.value }
                   })}
                   placeholder="16px"
@@ -385,56 +398,56 @@ const ElementSettings: React.FC = () => {
               </div>
             )}
           </div>
-          
+
           {/* Border settings */}
           <div className="space-y-4">
             <h4 className="text-sm font-medium flex items-center">
               <BoxSelect className="h-4 w-4 mr-2" />
               Border
             </h4>
-            
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="border-radius">Border Radius</Label>
-                <Input 
-                  id="border-radius" 
-                  value={selectedElement.styles.borderRadius || ''} 
-                  onChange={(e) => updateElement(selectedElementId, { 
+                <Input
+                  id="border-radius"
+                  value={selectedElement.styles.borderRadius || ''}
+                  onChange={(e) => updateElement(selectedElementId, {
                     styles: { ...selectedElement.styles, borderRadius: e.target.value }
                   })}
                   placeholder="4px"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="border-width">Border Width</Label>
-                <Input 
-                  id="border-width" 
-                  value={selectedElement.styles.borderWidth || ''} 
-                  onChange={(e) => updateElement(selectedElementId, { 
+                <Input
+                  id="border-width"
+                  value={selectedElement.styles.borderWidth || ''}
+                  onChange={(e) => updateElement(selectedElementId, {
                     styles: { ...selectedElement.styles, borderWidth: e.target.value }
                   })}
                   placeholder="1px"
                 />
               </div>
-              
+
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="border-color">Border Color</Label>
                 <div className="flex gap-2">
                   <div className="w-8 h-8 rounded border overflow-hidden">
-                    <input 
-                      type="color" 
-                      id="border-color" 
-                      value={selectedElement.styles.borderColor || '#000000'} 
-                      onChange={(e) => updateElement(selectedElementId, { 
+                    <input
+                      type="color"
+                      id="border-color"
+                      value={selectedElement.styles.borderColor || '#000000'}
+                      onChange={(e) => updateElement(selectedElementId, {
                         styles: { ...selectedElement.styles, borderColor: e.target.value }
                       })}
                       className="w-10 h-10 -ml-1 -mt-1"
                     />
                   </div>
-                  <Input 
+                  <Input
                     value={selectedElement.styles.borderColor || ''}
-                    onChange={(e) => updateElement(selectedElementId, { 
+                    onChange={(e) => updateElement(selectedElementId, {
                       styles: { ...selectedElement.styles, borderColor: e.target.value }
                     })}
                     placeholder="#000000"
@@ -444,33 +457,33 @@ const ElementSettings: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Text alignment */}
           {(selectedElement.type === 'text' || selectedElement.type === 'button') && (
             <div className="space-y-2">
               <Label>Text Alignment</Label>
               <div className="flex">
-                <Button 
-                  type="button" 
-                  variant={selectedElement.styles.alignment === 'left' ? 'default' : 'outline'} 
+                <Button
+                  type="button"
+                  variant={selectedElement.styles.alignment === 'left' ? 'default' : 'outline'}
                   size="icon"
                   onClick={() => handleTextAlignmentChange('left')}
                   className="rounded-r-none"
                 >
                   <AlignLeft className="h-4 w-4" />
                 </Button>
-                <Button 
-                  type="button" 
-                  variant={selectedElement.styles.alignment === 'center' ? 'default' : 'outline'} 
+                <Button
+                  type="button"
+                  variant={selectedElement.styles.alignment === 'center' ? 'default' : 'outline'}
                   size="icon"
                   onClick={() => handleTextAlignmentChange('center')}
                   className="rounded-none border-x-0"
                 >
                   <AlignCenter className="h-4 w-4" />
                 </Button>
-                <Button 
-                  type="button" 
-                  variant={selectedElement.styles.alignment === 'right' ? 'default' : 'outline'} 
+                <Button
+                  type="button"
+                  variant={selectedElement.styles.alignment === 'right' ? 'default' : 'outline'}
                   size="icon"
                   onClick={() => handleTextAlignmentChange('right')}
                   className="rounded-l-none"
@@ -480,7 +493,7 @@ const ElementSettings: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           {/* Custom CSS */}
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="custom-css">
@@ -488,10 +501,10 @@ const ElementSettings: React.FC = () => {
               <AccordionContent>
                 <div className="space-y-2 pt-2">
                   <Label htmlFor="el-custom-css">Custom CSS</Label>
-                  <Textarea 
-                    id="el-custom-css" 
-                    value={selectedElement.styles.customCSS || ''} 
-                    onChange={(e) => updateElement(selectedElementId, { 
+                  <Textarea
+                    id="el-custom-css"
+                    value={selectedElement.styles.customCSS || ''}
+                    onChange={(e) => updateElement(selectedElementId, {
                       styles: { ...selectedElement.styles, customCSS: e.target.value }
                     })}
                     placeholder="transform: rotate(5deg); opacity: 0.9;"
@@ -509,26 +522,26 @@ const ElementSettings: React.FC = () => {
               <MoveHorizontal className="h-4 w-4 mr-2" />
               Dimensions
             </h4>
-            
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="el-width">Width</Label>
-                <Input 
-                  id="el-width" 
-                  value={selectedElement.styles.width || ''} 
-                  onChange={(e) => updateElement(selectedElementId, { 
+                <Input
+                  id="el-width"
+                  value={selectedElement.styles.width || ''}
+                  onChange={(e) => updateElement(selectedElementId, {
                     styles: { ...selectedElement.styles, width: e.target.value }
                   })}
                   placeholder="100%"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="el-height">Height</Label>
-                <Input 
-                  id="el-height" 
-                  value={selectedElement.styles.height || ''} 
-                  onChange={(e) => updateElement(selectedElementId, { 
+                <Input
+                  id="el-height"
+                  value={selectedElement.styles.height || ''}
+                  onChange={(e) => updateElement(selectedElementId, {
                     styles: { ...selectedElement.styles, height: e.target.value }
                   })}
                   placeholder="auto"
@@ -536,31 +549,31 @@ const ElementSettings: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <h4 className="text-sm font-medium flex items-center">
               <ArrowUpDown className="h-4 w-4 mr-2" />
               Spacing
             </h4>
-            
+
             <div className="space-y-2">
               <Label htmlFor="el-margin">Margin</Label>
-              <Input 
-                id="el-margin" 
-                value={selectedElement.styles.margin || ''} 
-                onChange={(e) => updateElement(selectedElementId, { 
+              <Input
+                id="el-margin"
+                value={selectedElement.styles.margin || ''}
+                onChange={(e) => updateElement(selectedElementId, {
                   styles: { ...selectedElement.styles, margin: e.target.value }
                 })}
                 placeholder="0px 0px 16px 0px"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="el-padding">Padding</Label>
-              <Input 
-                id="el-padding" 
-                value={selectedElement.styles.padding || ''} 
-                onChange={(e) => updateElement(selectedElementId, { 
+              <Input
+                id="el-padding"
+                value={selectedElement.styles.padding || ''}
+                onChange={(e) => updateElement(selectedElementId, {
                   styles: { ...selectedElement.styles, padding: e.target.value }
                 })}
                 placeholder="8px 16px"

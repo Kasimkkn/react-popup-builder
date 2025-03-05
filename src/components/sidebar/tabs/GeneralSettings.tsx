@@ -1,9 +1,12 @@
 
-import React from "react";
-import { usePopup } from "@/contexts/PopupContext";
-import { Label } from "@/components/ui/label";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -11,19 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
+import { usePopup } from "@/contexts/PopupContext";
 import {
-  PopupPosition,
+  CloseButtonPosition,
   PopupAnimation,
-  TriggerType,
-  CloseButtonPosition
+  PopupPosition,
+  TriggerType
 } from "@/types/popup";
+import React from "react";
 
 const GeneralSettings: React.FC = () => {
   const { currentTemplate, updateCurrentTemplate } = usePopup();
