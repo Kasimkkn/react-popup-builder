@@ -86,6 +86,46 @@ const getAlignmentStyles = (element: any): React.CSSProperties => {
   return styles;
 };
 
+// Convert string of CSS rules to React style object
+const parseCustomCSS = (cssString: string | undefined): React.CSSProperties => {
+  if (!cssString) return {};
+
+  const cssObj: Record<string, string> = {};
+
+  try {
+    // Split the string by semicolons to get individual rules
+    const rules = cssString.split(';');
+
+    rules.forEach(rule => {
+      // Skip empty rules
+      if (!rule.trim()) return;
+
+      // Split each rule by the first colon to get property and value
+      const colonIndex = rule.indexOf(':');
+      if (colonIndex === -1) return;
+
+      let prop = rule.slice(0, colonIndex).trim();
+      const value = rule.slice(colonIndex + 1).trim();
+
+      // Skip if property or value is empty
+      if (!prop || !value) return;
+
+      // Convert kebab-case to camelCase for React
+      if (prop.includes('-')) {
+        prop = prop.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+      }
+
+      // Add to CSS object
+      cssObj[prop] = value;
+    });
+
+    return cssObj as React.CSSProperties;
+  } catch (error) {
+    console.error('Error parsing custom CSS:', error);
+    return {};
+  }
+};
+
 const LivePreview: React.FC = () => {
   const {
     currentTemplate,
@@ -130,7 +170,10 @@ const LivePreview: React.FC = () => {
   const renderElement = (element: any, idx: number) => {
     const isSelected = selectedElementId === element.id;
 
-    // Combine base styles with alignment styles
+    // Parse custom CSS
+    const customStyles = parseCustomCSS(element.styles.customCSS);
+
+    // Combine base styles with alignment styles and custom CSS
     const elementStyles: React.CSSProperties = {
       color: element.styles.textColor,
       backgroundColor: element.styles.backgroundColor,
@@ -142,11 +185,13 @@ const LivePreview: React.FC = () => {
       height: element.styles.height,
       borderColor: element.styles.borderColor,
       borderWidth: element.styles.borderWidth,
+      fontWeight: element.styles.fontWeight,
       outline: isSelected ? '2px solid hsl(var(--primary))' : 'none',
       outlineOffset: isSelected ? '2px' : 'none',
       cursor: 'pointer',
       transition: 'outline 0.2s ease, transform 0.2s ease',
-      ...getAlignmentStyles(element)
+      ...getAlignmentStyles(element),
+      ...customStyles
     };
 
     const elementClass = `preview-element preview-${element.type} ${isSelected ? 'selected' : ''}`;
@@ -176,7 +221,7 @@ const LivePreview: React.FC = () => {
               className={elementClass}
               style={{
                 ...elementStyles,
-                display: 'block',
+                display: 'inline-block', // Override the display from alignment styles
                 alignItems: undefined, // Remove alignment styles that were copied
               }}
               onClick={(e) => handleElementClick(e, element.id)}
@@ -187,39 +232,139 @@ const LivePreview: React.FC = () => {
         );
 
       case 'input':
-        // Create a wrapper div for inputs to handle alignment
-        return (
-          <div
-            key={element.id}
-            className={`${elementClass}-wrapper`}
-            style={getAlignmentStyles(element)}
-          >
-            {element.inputType === 'textarea' ? (
-              <textarea
-                className={elementClass}
-                style={{
-                  ...elementStyles,
-                  display: 'block', // Override the display from alignment styles
-                  alignItems: undefined, // Remove alignment styles that were copied
-                }}
-                placeholder={element.placeholder}
+        // Determine what kind of input to render based on inputType
+        switch (element.inputType) {
+          case 'textarea':
+            return (
+              <div
+                key={element.id}
+                className={`${elementClass}-wrapper`}
+                style={getAlignmentStyles(element)}
                 onClick={(e) => handleElementClick(e, element.id)}
-              />
-            ) : (
-              <input
-                type={element.inputType}
-                className={elementClass}
-                style={{
-                  ...elementStyles,
-                  display: 'block', // Override the display from alignment styles
-                  alignItems: undefined, // Remove alignment styles that were copied
-                }}
-                placeholder={element.placeholder}
+              >
+                {element.label && (
+                  <label className="block mb-1" style={{ color: elementStyles.color }}>
+                    {element.label} {element.required && <span className="text-red-500">*</span>}
+                  </label>
+                )}
+                <textarea
+                  className={elementClass}
+                  style={{
+                    ...elementStyles,
+                    display: 'block', // Override display from alignment styles
+                    alignItems: undefined // Remove alignment styles
+                  }}
+                  placeholder={element.placeholder}
+                  disabled // Disabled in preview
+                />
+              </div>
+            );
+
+          case 'select':
+            return (
+              <div
+                key={element.id}
+                className={`${elementClass}-wrapper`}
+                style={getAlignmentStyles(element)}
                 onClick={(e) => handleElementClick(e, element.id)}
-              />
-            )}
-          </div>
-        );
+              >
+                {element.label && (
+                  <label className="block mb-1" style={{ color: elementStyles.color }}>
+                    {element.label} {element.required && <span className="text-red-500">*</span>}
+                  </label>
+                )}
+                <select
+                  className={elementClass}
+                  style={{
+                    ...elementStyles,
+                    display: 'block',
+                    alignItems: undefined
+                  }}
+                  disabled
+                >
+                  <option value="" disabled>{element.placeholder || "Select an option"}</option>
+                  {(element.options || []).map((option: any, i: number) => (
+                    <option key={i} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            );
+
+          case 'radio':
+            return (
+              <div
+                key={element.id}
+                className={`${elementClass}-wrapper`}
+                style={getAlignmentStyles(element)}
+                onClick={(e) => handleElementClick(e, element.id)}
+              >
+                {element.label && (
+                  <label className="block mb-1" style={{ color: elementStyles.color }}>
+                    {element.label} {element.required && <span className="text-red-500">*</span>}
+                  </label>
+                )}
+                <div className="space-y-1">
+                  {(element.options || []).map((option: any, i: number) => (
+                    <label key={i} className="flex items-center gap-2">
+                      <input type="radio" name={element.name} value={option.value} disabled />
+                      <span style={{ color: elementStyles.color }}>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            );
+
+          case 'checkbox':
+            return (
+              <div
+                key={element.id}
+                className={`${elementClass}-wrapper`}
+                style={getAlignmentStyles(element)}
+                onClick={(e) => handleElementClick(e, element.id)}
+              >
+                {element.label && (
+                  <label className="block mb-1" style={{ color: elementStyles.color }}>
+                    {element.label} {element.required && <span className="text-red-500">*</span>}
+                  </label>
+                )}
+                <div className="space-y-1">
+                  {(element.options || []).map((option: any, i: number) => (
+                    <label key={i} className="flex items-center gap-2">
+                      <input type="checkbox" value={option.value} disabled />
+                      <span style={{ color: elementStyles.color }}>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            );
+
+          default: // text, email, number, password
+            return (
+              <div
+                key={element.id}
+                className={`${elementClass}-wrapper`}
+                style={getAlignmentStyles(element)}
+                onClick={(e) => handleElementClick(e, element.id)}
+              >
+                {element.label && (
+                  <label className="block mb-1" style={{ color: elementStyles.color }}>
+                    {element.label} {element.required && <span className="text-red-500">*</span>}
+                  </label>
+                )}
+                <input
+                  type={element.inputType || 'text'}
+                  className={elementClass}
+                  style={{
+                    ...elementStyles,
+                    display: 'block',
+                    alignItems: undefined
+                  }}
+                  placeholder={element.placeholder}
+                  disabled
+                />
+              </div>
+            );
+        }
 
       case 'image':
         // Create a wrapper div for images to handle alignment
@@ -233,7 +378,7 @@ const LivePreview: React.FC = () => {
               className={`${elementClass} relative`}
               style={{
                 ...elementStyles,
-                display: 'block', // Override the display from alignment styles
+                display: 'inline-block', // Override the display from alignment styles
                 alignItems: undefined, // Remove alignment styles that were copied
               }}
               onClick={(e) => handleElementClick(e, element.id)}

@@ -46,8 +46,10 @@ import {
   BoxSelect,
   Link as LinkIcon,
   MoveHorizontal,
+  Plus,
   Trash,
-  Type as TypeIcon
+  Type as TypeIcon,
+  X
 } from "lucide-react";
 import React from "react";
 
@@ -138,6 +140,36 @@ const ElementSettings: React.FC = () => {
     }
   };
 
+  // Add a new option for select, radio, or checkbox inputs
+  const addOption = () => {
+    const options = selectedElement.options || [];
+    const newOption = { value: `option-${options.length + 1}`, label: `Option ${options.length + 1}` };
+
+    updateElement(selectedElementId, {
+      options: [...options, newOption]
+    });
+  };
+
+  // Remove an option from select, radio, or checkbox inputs
+  const removeOption = (index: number) => {
+    const options = [...(selectedElement.options || [])];
+    options.splice(index, 1);
+
+    updateElement(selectedElementId, {
+      options: options
+    });
+  };
+
+  // Update an option's label or value
+  const updateOption = (index: number, field: 'label' | 'value', value: string) => {
+    const options = [...(selectedElement.options || [])];
+    options[index] = { ...options[index], [field]: value };
+
+    updateElement(selectedElementId, {
+      options: options
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -175,7 +207,6 @@ const ElementSettings: React.FC = () => {
         </TabsList>
 
         <TabsContent value="content" className="space-y-4 pt-4">
-          {/* Text Element Content */}
           {selectedElement.type === 'text' && (
             <div className="space-y-2">
               <Label htmlFor="content">Text Content</Label>
@@ -188,7 +219,6 @@ const ElementSettings: React.FC = () => {
             </div>
           )}
 
-          {/* Button Element Content */}
           {selectedElement.type === 'button' && (
             <>
               <div className="space-y-2">
@@ -251,9 +281,23 @@ const ElementSettings: React.FC = () => {
                 <Label htmlFor="input-type">Input Type</Label>
                 <Select
                   value={selectedElement.inputType || 'text'}
-                  onValueChange={(value) => updateElement(selectedElementId, {
-                    inputType: value as InputType
-                  })}
+                  onValueChange={(value) => {
+                    const inputType = value as InputType;
+                    const updates: any = { inputType };
+
+                    if (['select', 'radio', 'checkbox'].includes(inputType) && !selectedElement.options) {
+                      updates.options = [
+                        { value: 'option-1', label: 'Option 1' },
+                        { value: 'option-2', label: 'Option 2' }
+                      ];
+                    }
+
+                    if (inputType === 'radio' && !selectedElement.name) {
+                      updates.name = `radio-group-${Date.now()}`;
+                    }
+
+                    updateElement(selectedElementId, updates);
+                  }}
                 >
                   <SelectTrigger id="input-type">
                     <SelectValue placeholder="Select type" />
@@ -264,17 +308,109 @@ const ElementSettings: React.FC = () => {
                     <SelectItem value="number">Number</SelectItem>
                     <SelectItem value="password">Password</SelectItem>
                     <SelectItem value="textarea">Textarea</SelectItem>
+                    <SelectItem value="checkbox">Checkbox</SelectItem>
+                    <SelectItem value="radio">Radio</SelectItem>
+                    <SelectItem value="select">Select</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="input-placeholder">Placeholder</Label>
+                <Label htmlFor="input-label">Label</Label>
                 <Input
-                  id="input-placeholder"
-                  value={selectedElement.placeholder || ''}
-                  onChange={(e) => updateElement(selectedElementId, { placeholder: e.target.value })}
+                  id="input-label"
+                  value={selectedElement.label || ''}
+                  onChange={(e) => updateElement(selectedElementId, { label: e.target.value })}
+                  placeholder="Enter label text"
                 />
+              </div>
+
+              {(selectedElement.inputType === 'text' ||
+                selectedElement.inputType === 'email' ||
+                selectedElement.inputType === 'number' ||
+                selectedElement.inputType === 'password' ||
+                selectedElement.inputType === 'textarea') && (
+                  <div className="space-y-2">
+                    <Label htmlFor="input-placeholder">Placeholder</Label>
+                    <Input
+                      id="input-placeholder"
+                      value={selectedElement.placeholder || ''}
+                      onChange={(e) => updateElement(selectedElementId, { placeholder: e.target.value })}
+                    />
+                  </div>
+                )}
+
+              {['select', 'radio', 'checkbox'].includes(selectedElement.inputType || '') && (
+                <div className="space-y-4 mt-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Options</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addOption}
+                      className="h-8"
+                    >
+                      <Plus className="h-3.5 w-3.5 mr-1" />
+                      Add Option
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {(selectedElement.options || []).map((option, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Input
+                          value={option.label}
+                          onChange={(e) => updateOption(index, 'label', e.target.value)}
+                          placeholder="Option label"
+                          className="flex-1"
+                        />
+                        <Input
+                          value={option.value}
+                          onChange={(e) => updateOption(index, 'value', e.target.value)}
+                          placeholder="Value"
+                          className="w-1/3"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeOption(index)}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+
+                    {(!selectedElement.options || selectedElement.options.length === 0) && (
+                      <div className="text-center p-2 text-sm text-muted-foreground">
+                        No options added yet. Click "Add Option" to add one.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {selectedElement.inputType === 'radio' && (
+                <div className="space-y-2">
+                  <Label htmlFor="radio-name">Radio Group Name</Label>
+                  <Input
+                    id="radio-name"
+                    value={selectedElement.name || ''}
+                    onChange={(e) => updateElement(selectedElementId, { name: e.target.value })}
+                    placeholder="Enter radio group name"
+                  />
+                </div>
+              )}
+
+              <div className="pt-2">
+                <Label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedElement.required || false}
+                    onChange={(e) => updateElement(selectedElementId, { required: e.target.checked })}
+                  />
+                  Required field
+                </Label>
               </div>
             </>
           )}
@@ -329,7 +465,7 @@ const ElementSettings: React.FC = () => {
           {/* Common style settings for all element types */}
           <div className="grid grid-cols-2 gap-3">
             {/* Color settings depend on element type */}
-            {(selectedElement.type === 'text' || selectedElement.type === 'button') && (
+            {(selectedElement.type === 'text' || selectedElement.type === 'button' || selectedElement.type === 'input') && (
               <div className="space-y-2">
                 <Label htmlFor="text-color">Text Color</Label>
                 <div className="flex gap-2">
@@ -356,15 +492,15 @@ const ElementSettings: React.FC = () => {
               </div>
             )}
 
-            {selectedElement.type === 'button' && (
+            {(selectedElement.type === 'button' || selectedElement.type === 'input') && (
               <div className="space-y-2">
-                <Label htmlFor="button-bg-color">Background</Label>
+                <Label htmlFor="element-bg-color">Background</Label>
                 <div className="flex gap-2">
                   <div className="w-8 h-8 rounded border overflow-hidden">
                     <input
                       type="color"
-                      id="button-bg-color"
-                      value={selectedElement.styles.backgroundColor || '#000000'}
+                      id="element-bg-color"
+                      value={selectedElement.styles.backgroundColor || '#ffffff'}
                       onChange={(e) => updateElement(selectedElementId, {
                         styles: { ...selectedElement.styles, backgroundColor: e.target.value }
                       })}
@@ -376,15 +512,15 @@ const ElementSettings: React.FC = () => {
                     onChange={(e) => updateElement(selectedElementId, {
                       styles: { ...selectedElement.styles, backgroundColor: e.target.value }
                     })}
-                    placeholder="#000000"
+                    placeholder="#ffffff"
                     className="flex-1"
                   />
                 </div>
               </div>
             )}
 
-            {/* Font size for text and buttons */}
-            {(selectedElement.type === 'text' || selectedElement.type === 'button') && (
+            {/* Font size for text, buttons, and inputs */}
+            {(selectedElement.type === 'text' || selectedElement.type === 'button' || selectedElement.type === 'input') && (
               <div className="space-y-2">
                 <Label htmlFor="font-size">Font Size</Label>
                 <Input
@@ -395,6 +531,31 @@ const ElementSettings: React.FC = () => {
                   })}
                   placeholder="16px"
                 />
+              </div>
+            )}
+
+            {/* Font weight */}
+            {(selectedElement.type === 'text' || selectedElement.type === 'button' || selectedElement.type === 'input') && (
+              <div className="space-y-2">
+                <Label htmlFor="font-weight">Font Weight</Label>
+                <Select
+                  value={selectedElement.styles.fontWeight || '400'}
+                  onValueChange={(value) => updateElement(selectedElementId, {
+                    styles: { ...selectedElement.styles, fontWeight: value }
+                  })}
+                >
+                  <SelectTrigger id="font-weight">
+                    <SelectValue placeholder="Select weight" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="300">Light (300)</SelectItem>
+                    <SelectItem value="400">Regular (400)</SelectItem>
+                    <SelectItem value="500">Medium (500)</SelectItem>
+                    <SelectItem value="600">Semi-Bold (600)</SelectItem>
+                    <SelectItem value="700">Bold (700)</SelectItem>
+                    <SelectItem value="800">Extra-Bold (800)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>
@@ -459,7 +620,7 @@ const ElementSettings: React.FC = () => {
           </div>
 
           {/* Text alignment */}
-          {(selectedElement.type === 'text' || selectedElement.type === 'button') && (
+          {(selectedElement.type === 'text' || selectedElement.type === 'button' || selectedElement.type === 'input') && (
             <div className="space-y-2">
               <Label>Text Alignment</Label>
               <div className="flex">

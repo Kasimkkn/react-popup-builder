@@ -1,51 +1,54 @@
 // Define the position options for popups
-export type PopupPosition = 
-  | 'top-left' 
-  | 'top-center' 
-  | 'top-right' 
-  | 'center-left' 
-  | 'center' 
-  | 'center-right' 
-  | 'bottom-left' 
-  | 'bottom-center' 
+export type PopupPosition =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'center-left'
+  | 'center'
+  | 'center-right'
+  | 'bottom-left'
+  | 'bottom-center'
   | 'bottom-right';
 
 // Define the animation options for popups
-export type PopupAnimation = 
-  | 'fade-in' 
-  | 'scale-in' 
-  | 'slide-in-top' 
-  | 'slide-in-right' 
-  | 'slide-in-bottom' 
-  | 'slide-in-left' 
+export type PopupAnimation =
+  | 'fade-in'
+  | 'scale-in'
+  | 'slide-in-top'
+  | 'slide-in-right'
+  | 'slide-in-bottom'
+  | 'slide-in-left'
   | 'none';
 
 // Define the trigger types for popups
-export type TriggerType = 
-  | 'onLoad' 
-  | 'onDelay' 
+export type TriggerType =
+  | 'onLoad'
+  | 'onDelay'
   | 'onClick';
 
 // Define the element types available for popups
-export type ElementType = 
-  | 'text' 
-  | 'button' 
-  | 'input' 
+export type ElementType =
+  | 'text'
+  | 'button'
+  | 'input'
   | 'image';
 
 // Define the input types for form elements
-export type InputType = 
-  | 'text' 
-  | 'email' 
-  | 'number' 
-  | 'password' 
-  | 'textarea';
+export type InputType =
+  | 'text'
+  | 'email'
+  | 'number'
+  | 'password'
+  | 'textarea'
+  | 'radio'
+  | 'checkbox'
+  | 'select';
 
 // Define the button action types
-export type ButtonAction = 
-  | 'close' 
-  | 'link' 
-  | 'submit' 
+export type ButtonAction =
+  | 'close'
+  | 'link'
+  | 'submit'
   | 'custom';
 
 // Define the close button position options
@@ -68,6 +71,18 @@ export interface ElementStyles {
   fontWeight?: string;
 }
 
+// Define options for select input type
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+// Define radio options
+export interface RadioOption {
+  value: string;
+  label: string;
+}
+
 // Define the structure for a popup element
 export interface PopupElement {
   id: string;
@@ -83,6 +98,8 @@ export interface PopupElement {
   alt?: string;
   styles: ElementStyles;
   url?: string; // Added for backwards compatibility
+  options?: SelectOption[] | RadioOption[]; // For select, radio, and checkbox inputs
+  name?: string; // For radio inputs that share the same name
 }
 
 // Define a column in the layout

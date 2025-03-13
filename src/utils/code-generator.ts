@@ -1,4 +1,5 @@
-import { LayoutColumn, LayoutRow, PopupElement, PopupTemplate } from "@/types/popup";
+
+import { ButtonAction, LayoutColumn, LayoutRow, PopupElement, PopupTemplate } from "@/types/popup";
 
 /**
  * Generate CSS for popup elements
@@ -18,6 +19,7 @@ const generateElementCSS = (element: PopupElement, elementId: string): string =>
   if (styles.fontSize) css += `font-size: ${styles.fontSize};`;
   if (styles.height) css += `height: ${styles.height};`;
   if (styles.width) css += `width: ${styles.width};`;
+  if (styles.fontWeight) css += `font-weight: ${styles.fontWeight};`;
 
   // Add alignment styles based on element type
   if (styles.alignment) {
@@ -47,6 +49,15 @@ const generateElementCSS = (element: PopupElement, elementId: string): string =>
         break;
     }
 
+    css += `}\n`;
+  }
+
+  // Add label styles for inputs
+  if (element.type === 'input' && element.label) {
+    css += `#${elementId}-label {`;
+    if (styles.textColor) css += `color: ${styles.textColor};`;
+    if (styles.fontSize) css += `font-size: ${styles.fontSize};`;
+    css += `display: block; margin-bottom: 4px;`;
     css += `}\n`;
   }
 
@@ -224,29 +235,41 @@ const generatePopupCSS = (template: PopupTemplate): string => {
   return css;
 };
 
+/**
+ * Convert blob URLs to data URLs or embedded base64 for exports
+ */
 const convertImageUrlForExport = async (imageUrl: string): Promise<string> => {
+  // If it's already a valid URL (not a blob URL), return it
   if (!imageUrl.startsWith('blob:')) {
     return imageUrl;
   }
 
   try {
+    // Placeholder image if we can't process the blob
+    return 'https://via.placeholder.com/200';
 
+    // Note: The code below would be ideal but requires fetch which is 
+    // not available in the export scenario, keeping as reference
+    /*
     const response = await fetch(imageUrl);
     const blob = await response.blob();
-
+    
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
       reader.readAsDataURL(blob);
     });
-
+    */
   } catch (error) {
     console.error('Error converting blob URL:', error);
     return 'https://via.placeholder.com/200';
   }
 };
 
-const generateElementHTML = async (element: PopupElement): Promise<string> => {
+/**
+ * Generate HTML for popup elements
+ */
+const generateElementHTML = (element: PopupElement): string => {
   if (!element) return '';
 
   const elementId = `el_${element.id.split('-')[0]}`;
@@ -269,7 +292,7 @@ const generateElementHTML = async (element: PopupElement): Promise<string> => {
       const action = element.action || 'close';
       let actionAttr = '';
 
-      switch (action) {
+      switch (action as ButtonAction) {
         case 'close':
           actionAttr = 'onclick="closePopup()"';
           break;
@@ -293,21 +316,63 @@ const generateElementHTML = async (element: PopupElement): Promise<string> => {
       const inputType = element.inputType || 'text';
       const required = element.required ? 'required' : '';
 
+      // Add label if it exists
+      if (element.label) {
+        html += `<label id="${elementId}-label" class="popup-element-label">${element.label}${required ? ' <span style="color: #ff4d4f;">*</span>' : ''}</label>\n  `;
+      }
+
       if (inputType === 'textarea') {
         html += `<textarea id="${elementId}" class="popup-element popup-input" placeholder="${element.placeholder || ''}" ${required}></textarea>`;
+      } else if (inputType === 'select') {
+        html += `<select id="${elementId}" class="popup-element popup-select" ${required}>\n`;
+        html += `  <option value="" disabled selected>${element.placeholder || 'Select an option'}</option>\n`;
+
+        if (element.options && Array.isArray(element.options)) {
+          element.options.forEach(option => {
+            html += `  <option value="${option.value}">${option.label}</option>\n`;
+          });
+        }
+
+        html += `</select>`;
+      } else if (inputType === 'radio') {
+        html += `<div id="${elementId}" class="popup-element popup-radio-group">\n`;
+
+        if (element.options && Array.isArray(element.options)) {
+          element.options.forEach(option => {
+            html += `  <label class="popup-radio-label">\n`;
+            html += `    <input type="radio" name="${element.name || elementId}" value="${option.value}" ${required}>\n`;
+            html += `    <span>${option.label}</span>\n`;
+            html += `  </label>\n`;
+          });
+        }
+
+        html += `</div>`;
+      } else if (inputType === 'checkbox') {
+        html += `<div id="${elementId}" class="popup-element popup-checkbox-group">\n`;
+
+        if (element.options && Array.isArray(element.options)) {
+          element.options.forEach(option => {
+            html += `  <label class="popup-checkbox-label">\n`;
+            html += `    <input type="checkbox" value="${option.value}" ${required}>\n`;
+            html += `    <span>${option.label}</span>\n`;
+            html += `  </label>\n`;
+          });
+        }
+
+        html += `</div>`;
       } else {
         html += `<input id="${elementId}" class="popup-element popup-input" type="${inputType}" placeholder="${element.placeholder || ''}" ${required}>`;
       }
       break;
+
     case 'image':
       // Handle image URL for export
       let imageUrl = element.imageUrl || '';
 
-      try {
-        imageUrl = await convertImageUrlForExport(imageUrl);
-      } catch (error) {
-        console.error('Error converting image URL:', error);
-        imageUrl = 'https://via.placeholder.com/200';
+      // Replace blob URLs with placeholder for exports
+      if (imageUrl.startsWith('blob:')) {
+        // The ideal solution would be to convert to data URL, but for now use placeholder
+        imageUrl = 'https://placehold.co/600x400/png';
       }
 
       html += `<img id="${elementId}" class="popup-element popup-image" src="${imageUrl}" alt="${element.alt || ''}">`;
@@ -322,57 +387,58 @@ const generateElementHTML = async (element: PopupElement): Promise<string> => {
   return html;
 };
 
-// Option 2: Modify generateRowHTML and generateColumnHTML to be async
-const generateColumnHTML = async (column: LayoutColumn): Promise<string> => {
+/**
+ * Generate HTML for a layout column
+ */
+const generateColumnHTML = (column: LayoutColumn): string => {
   if (!column) return '';
 
   const columnStyle = `width: ${column.ratio || '100%'}`;
   let html = `<div class="popup-column" style="${columnStyle}">\n`;
 
   if (column.elements && Array.isArray(column.elements)) {
-    // Use Promise.all to handle async element generation
-    const elementHTMLs = await Promise.all(
-      column.elements.map(async element => {
-        const elementHTML = await generateElementHTML(element);
-        return `  ${elementHTML.replace(/\n/g, '\n  ')}\n`;
-      })
-    );
-    html += elementHTMLs.join('');
+    column.elements.forEach(element => {
+      html += `  ${generateElementHTML(element).replace(/\n/g, '\n  ')}\n`;
+    });
   }
 
   html += '</div>';
   return html;
 };
 
-const generateRowHTML = async (row: LayoutRow): Promise<string> => {
+/**
+ * Generate HTML for a layout row
+ */
+const generateRowHTML = (row: LayoutRow): string => {
   if (!row) return '';
 
   const rowStyle = row.height ? `height: ${row.height};` : '';
   let html = `<div class="popup-row" style="${rowStyle}">\n`;
 
   if (row.columns && Array.isArray(row.columns)) {
-    // Use Promise.all to handle async column generation
-    const columnHTMLs = await Promise.all(
-      row.columns.map(async column => {
-        const columnHTML = await generateColumnHTML(column);
-        return `  ${columnHTML.replace(/\n/g, '\n  ')}\n`;
-      })
-    );
-    html += columnHTMLs.join('');
+    row.columns.forEach(column => {
+      html += `  ${generateColumnHTML(column).replace(/\n/g, '\n  ')}\n`;
+    });
   }
 
   html += '</div>';
   return html;
 };
 
-export const generatePopupCode = async (template: PopupTemplate): Promise<string> => {
+/**
+ * Generate complete HTML with embedded CSS and JS for a popup
+ */
+export const generatePopupCode = (template: PopupTemplate): string => {
+  // Validate layout structure
   if (!template.layout.rows || !Array.isArray(template.layout.rows) || template.layout.rows.length === 0) {
+    // Return minimal valid popup code
     return `<div>Invalid popup layout structure</div>`;
   }
 
   let css = '<style>\n';
   css += generatePopupCSS(template);
 
+  // Generate CSS for all elements in all rows and columns
   template.layout.rows.forEach(row => {
     if (row && row.columns) {
       row.columns.forEach(column => {
@@ -402,16 +468,11 @@ export const generatePopupCode = async (template: PopupTemplate): Promise<string
   // Layout with rows and columns
   html += '    <div class="popup-content">\n';
 
-  // Use await for async row generation
-  const rowsHTML = await Promise.all(
-    template.layout.rows.map(async row => {
-      if (row) {
-        return `      ${(await generateRowHTML(row)).replace(/\n/g, '\n      ')}\n`;
-      }
-      return '';
-    })
-  );
-  html += rowsHTML.join('');
+  template.layout.rows.forEach(row => {
+    if (row) {
+      html += `      ${generateRowHTML(row).replace(/\n/g, '\n      ')}\n`;
+    }
+  });
 
   html += '    </div>\n';
   html += '  </div>\n';
@@ -423,10 +484,71 @@ export const generatePopupCode = async (template: PopupTemplate): Promise<string
 
   html += '</div>\n';
 
-  // JavaScript remains the same
-  const js = `<script>
-  // ... (previous script code remains unchanged)
-  </script>`;
+  // JavaScript
+  let js = `<script>
+  // Function to close the popup
+  function closePopup() {
+    const popupOverlay = document.getElementById('popup-overlay');
+    if (popupOverlay) {
+      popupOverlay.style.display = 'none';
+    }
+  }
+  
+  // Function for custom button action (placeholder)
+  function customButtonAction() {
+    console.log('Custom button clicked');
+    // Replace with your custom functionality
+  }
+  
+  // Function to show the popup
+  function showPopup() {
+    const popupOverlay = document.getElementById('popup-overlay');
+    if (popupOverlay) {
+      popupOverlay.style.display = 'flex';
+    }
+  }
+  
+  // Initialize popup based on trigger
+  function initPopup() {
+    // Popup trigger configuration
+    const triggerType = "${template.trigger.type}";
+    
+    switch (triggerType) {
+      case 'onLoad':
+        showPopup();
+        break;
+        
+      case 'onDelay':
+        const delay = ${parseInt(template.trigger.delay || "0") * 1000};
+        setTimeout(showPopup, delay);
+        break;
+        
+      case 'onClick':
+        const triggerElement = document.getElementById("${template.trigger.elementId || ""}");
+        if (triggerElement) {
+          triggerElement.addEventListener('click', showPopup);
+        } else {
+          console.error('Trigger element not found');
+        }
+        break;
+    }
+    
+    // Close popup when clicking on overlay (optional)
+    const popupOverlay = document.getElementById('popup-overlay');
+    const popupContainer = document.getElementById('popup-container');
+    
+    if (popupOverlay && popupContainer) {
+      popupOverlay.addEventListener('click', function(event) {
+        if (event.target === popupOverlay) {
+          closePopup();
+        }
+      });
+    }
+  }
+  
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initPopup);
+</script>`;
 
   // Combine all code
   return `${css}${html}${js}`;

@@ -24,8 +24,8 @@ interface PopupContextType {
   isPreviewVisible: boolean;
   isCodeVisible: boolean;
   selectedElementId: string | null;
-  isLoggedIn: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  isLoggedIn: boolean;
   setCurrentTemplate: (template: PopupTemplate) => void;
   updateCurrentTemplate: (updates: Partial<PopupTemplate>) => void;
   addElement: (type: ElementType, rowId: string, columnId: string) => void;
@@ -385,10 +385,13 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       case 'input':
         newElement.inputType = 'text';
         newElement.placeholder = 'Enter text...';
+        newElement.label = 'Field Label';
         newElement.styles = {
           borderRadius: '4px',
           borderWidth: '1px',
           borderColor: '#e2e8f0',
+          backgroundColor: '#ffffff',
+          textColor: '#1e293b',
           padding: '8px 12px',
           width: '100%'
         };
@@ -455,6 +458,22 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       title: `${type.charAt(0).toUpperCase() + type.slice(1)} element added`,
       variant: "default"
     });
+
+    useEffect(() => {
+      const handleElementUpdate = (e: CustomEvent) => {
+        if (e.detail && e.detail.elementId && e.detail.updates) {
+          updateElement(e.detail.elementId, e.detail.updates);
+        }
+      };
+
+      document.addEventListener('updateElement', handleElementUpdate as EventListener);
+
+      return () => {
+        document.removeEventListener('updateElement', handleElementUpdate as EventListener);
+      };
+    }, []);
+
+    return newElement.id;
   };
 
   const updateElement = (elementId: string, updates: Partial<PopupElement>) => {
@@ -739,10 +758,10 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     selectedElementId,
     setCurrentTemplate,
     updateCurrentTemplate,
-    isLoggedIn,
-    setIsLoggedIn,
     addElement,
     updateElement,
+    setIsLoggedIn,
+    isLoggedIn,
     deleteElement,
     selectElement,
     saveCurrentTemplate,

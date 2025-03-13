@@ -1,255 +1,227 @@
 # Popup Builder
 
-A fully customizable tool that enables users to create, configure, and export popups in HTML with embedded CSS and JavaScript.
+A customizable popup creator for web applications with a visual editor and code export functionality.
 
-## Table of Contents
-- [Overview](#overview)
-- [Target Audience](#target-audience)
-- [Features](#features)
-- [Technical Stack](#technical-stack)
-- [Data Model](#data-model)
-- [UI Design](#ui-design)
-- [Security & Scalability](#security--scalability)
-- [Development Roadmap](#development-roadmap)
-- [Challenges & Solutions](#challenges--solutions)
-- [Future Expansion](#future-expansion)
-
-## Overview
-
-Popup Builder is designed to cater to both developers and non-technical users, ensuring ease of use while offering deep customization options. Users can create, save, and export custom popups without extensive coding knowledge.
-
-## Target Audience
-
-- **Developers**: Need fully customizable popup components that can be embedded in their applications.
-- **Non-technical users**: Require an intuitive UI to design popups without coding.
+![Popup Builder Screenshot](https://via.placeholder.com/800x450?text=Popup+Builder+Screenshot)
 
 ## Features
 
-### Popup Customization
-- Border, background, padding, text color, alignment, etc.
-- Elements: Text, button, image upload (via Cloudinary), form fields (text, number, email, etc.)
-- Layout System: Row-column structure for content organization
-- Popup Positioning: 9 predefined positions (top-left, center, bottom-right, etc.)
+- **Visual Editor**: Create popups with a drag-and-drop interface
+- **Customizable Elements**: Add text, buttons, inputs, and images
+- **Layout Control**: Flexible layout system with rows and columns
+- **Styling Options**: Customize colors, sizes, borders, and more
+- **Animation Effects**: Choose from various entrance animations
+- **Multiple Templates**: Create and save different popup designs
+- **Code Export**: Generate ready-to-use HTML/CSS/JS code
+- **Live Preview**: See changes in real-time
+- **Dark/Light Mode**: Switch between themes
 
-### Triggers
-- On page load
-- After X seconds
-- On click (via user-defined element ID)
+## Getting Started
 
-### Additional Features
-- Buttons & Close Options: Close button (inside/outside), Cancel button in footer
-- Predefined Animations: Users can select from a set of predefined popup animations
-- Template Management:
-  - Create new popups
-  - Browse saved templates
-  - Resume incomplete popups
-  - Stored in JSON format in localStorage (authentication planned for future)
-- Live Preview & Code View:
-  - Real-time preview (70% preview area, 30% sidebar customization panel)
-  - Code view displaying generated HTML with embedded CSS and JavaScript (copy-only)
+### 1. Create a New Template
 
-## Technical Stack
+1. Click the "New Template" button in the dropdown menu
+2. Give your template a name
+3. Start customizing in the editor
 
-### Frontend
-- React.js (for scalable UI)
-- TailwindCSS (for styling flexibility)
+### 2. Customize Your Layout
 
-### Storage
-- LocalStorage for saving popup templates initially
-- Cloudinary for image uploads
+#### Adding Rows and Columns
 
-### Future Backend (for authentication & cloud storage)
-- Firebase/Auth0 for authentication (future phase)
-- A database (MongoDB, PostgreSQL) for storing templates online
+1. Go to the "Layout" tab in the sidebar
+2. Use predefined column layouts (e.g., 50-50, 70-30, 33-33-33)
+3. Click "Add Row" to insert a new row
+4. Adjust column widths as needed
 
-## Data Model
+Available predefined layouts:
+- Full Width (100%)
+- Two Equal (50% - 50%)
+- Three Equal (33.33% - 33.33% - 33.33%)
+- Four Equal (25% - 25% - 25% - 25%)
+- Wide Left (70% - 30%)
+- Wide Right (30% - 70%)
+- One-Third Left (33.33% - 66.67%)
+- One-Third Right (66.67% - 33.33%)
+- Center Focus (25% - 50% - 25%)
+- Strong Center (20% - 60% - 20%)
 
-JSON Structure Example:
+#### Managing Columns
+- Add columns to any row
+- Delete columns (minimum one column per row)
+- Resize columns by adjusting their width percentages
 
-```json
-{
-  "id": "template_001",
-  "name": "Welcome Popup",
-  "popupStyles": {
-    "position": "center",
-    "width": "400px",
-    "height": "250px",
-    "background": "#ffffff",
-    "border": "1px solid #000",
-    "borderRadius": "10px",
-    "padding": "20px",
-    "boxShadow": "0px 4px 6px rgba(0,0,0,0.1)"
-  },
-  "overlayStyles": {
-    "background": "rgba(0,0,0,0.5)",
-    "opacity": "0.8"
-  },
-  "layout": {
-    "rows": 1,
-    "columns": [
-      {
-        "id": "col_001",
-        "ratio": "100%",
-        "elements": [
-          {
-            "id": "el_001",
-            "type": "text",
-            "content": "Welcome to our website!",
-            "styles": {
-              "borderColor": "",
-              "borderWidth": "",
-              "backgroundColor": "",
-              "textColor": "#333",
-              "borderRadius": "10px",
-              "margin": "",
-              "padding": "",
-              "customCSS": "",
-              "fontSize": "18px",
-              "alignment": "center",
-              "height": "",
-              "width": ""
-            }
-          },
-          {
-            "id": "el_002",
-            "type": "button",
-            "label": "Get Started",
-            "action": "close",
-            "styles": {
-              "borderColor": "",
-              "borderWidth": "",
-              "backgroundColor": "#007BFF",
-              "textColor": "#ffffff",
-              "borderRadius": "10px",
-              "margin": "",
-              "padding": "10px 20px",
-              "customCSS": "",
-              "fontSize": "16px",
-              "alignment": "",
-              "height": "",
-              "width": ""
-            }
-          },
-          {
-            "id": "el_003",
-            "type": "input",
-            "inputType": "text",
-            "placeholder": "Enter your name",
-            "styles": {
-              "borderColor": "",
-              "borderWidth": "",
-              "backgroundColor": "",
-              "textColor": "",
-              "borderRadius": "10px",
-              "margin": "",
-              "padding": "8px",
-              "customCSS": "",
-              "fontSize": "",
-              "alignment": "",
-              "height": "",
-              "width": "100%"
-            }
-          }
-        ]
-      }
-    ]
-  },
-  "closeButton": {
-    "enabled": true,
-    "position": "inside",
-    "styles": {
-      "borderColor": "",
-      "borderWidth": "",
-      "backgroundColor": "",
-      "textColor": "#000",
-      "borderRadius": "10px",
-      "margin": "",
-      "padding": "5px",
-      "customCSS": "",
-      "fontSize": "16px",
-      "alignment": ""
-    }
-  },
-  "trigger": {
-    "type": "onLoad",
-    "delay": "2"  
-  },
-  "animation": "fade-in"
+### 3. Add Elements
+
+1. Go to the "Library" tab in the sidebar
+2. Choose an element type:
+   - **Text**: Headings, paragraphs, or any text content
+   - **Button**: Call-to-action buttons with custom actions
+   - **Input**: Form fields for collecting user data
+   - **Image**: Add images to your popup
+3. Drag or click to add the element to your layout
+
+### 4. Customize Elements
+
+1. Click on any element to select it
+2. Go to the "Element" tab to see customization options
+3. Modify properties like:
+   - Text content and formatting
+   - Colors and background
+   - Sizes and dimensions
+   - Borders and spacing
+   - Input placeholders and types
+   - Button actions and labels
+
+### 5. General Settings
+
+In the "General" tab, you can customize:
+
+- Popup position on the screen
+- Overlay appearance
+- Animation effects
+- Close button behavior
+- Trigger conditions (on page load, after delay, on click)
+
+### 6. Export Your Popup
+
+1. Click the "Export Code" button in the header
+2. The generated code will be copied to your clipboard
+3. Paste the code into your website
+
+## Popup Settings Reference
+
+### Popup Positions
+- Top Left
+- Top Center
+- Top Right
+- Center Left
+- Center
+- Center Right
+- Bottom Left
+- Bottom Center
+- Bottom Right
+
+### Animation Types
+- Fade In
+- Scale In
+- Slide In (from top, right, bottom, or left)
+- None
+
+### Trigger Types
+- On Load: Display when the page loads
+- On Delay: Display after a specified time delay
+- On Click: Display when a specific element is clicked
+
+### Element Settings
+
+#### Text Elements
+- Content
+- Font size
+- Font weight
+- Text color
+- Alignment
+- Margins
+
+#### Button Elements
+- Label
+- Action type (close, link, submit, custom)
+- Target URL (for link actions)
+- Background color
+- Text color
+- Border radius
+- Padding
+- Width
+
+#### Input Elements
+- Type (text, email, number, password, textarea)
+- Placeholder
+- Required status
+- Border style
+- Border radius
+- Padding
+- Width
+
+#### Image Elements
+- Image URL
+- Alt text
+- Width
+- Border radius
+
+## Keyboard Shortcuts
+
+- `Ctrl/Cmd + S`: Save current template
+
+## Tips and Best Practices
+
+1. **Start with a template**: Use one of the default templates as a starting point
+2. **Keep it simple**: Focus on one clear call-to-action
+3. **Use consistent styling**: Maintain consistent colors and styling
+4. **Test on different devices**: Ensure your popup looks good on mobile and desktop
+5. **Use animations wisely**: Subtle animations look more professional
+6. **Consider timing**: Set appropriate delays for popups
+
+## Troubleshooting
+
+**Issue**: Elements are not displaying correctly in the preview.  
+**Solution**: Check if all required fields are filled out in the element settings.
+
+**Issue**: Can't add new rows or columns.  
+**Solution**: Make sure you're in the Layout tab of the sidebar.
+
+**Issue**: Export code doesn't work as expected.  
+**Solution**: Verify all elements have valid properties. Replace image URLs with actual hosted images.
+
+## Implementation Details
+
+The Popup Builder is built with:
+- React
+- TypeScript
+- Tailwind CSS
+- Shadcn UI components
+
+The application uses a context-based state management system to handle all popup configurations and modifications.
+
+### Data Structure
+
+Popups are represented by a TypeScript object with the following structure:
+
+```typescript
+interface PopupTemplate {
+  id: string;
+  name: string;
+  popupStyles: PopupStyles; // Position, size, etc.
+  overlayStyles: OverlayStyles; // Background, opacity
+  layout: PopupLayout; // Rows and columns structure
+  closeButton: CloseButton; // Close button configuration
+  trigger: PopupTrigger; // When to show the popup
+  animation: PopupAnimation; // How the popup appears
 }
 ```
 
-## UI Design
+The layout uses a nested structure of rows and columns:
 
-- Form-based UI initially, with a future upgrade to drag-and-drop
-- Sidebar customization panel (30%) and live preview area (70%)
-- Minimalistic, intuitive design with clear customization options
+```typescript
+interface PopupLayout {
+  rows: LayoutRow[];
+}
 
-## Security & Scalability
+interface LayoutRow {
+  id: string;
+  height?: string;
+  columns: LayoutColumn[];
+}
 
-- LocalStorage security: Consider encrypting JSON data for privacy
-- Cloudinary API key security: Use backend proxy when authentication is implemented
-- Scalability: Future backend should be REST/GraphQL-based for managing user templates
+interface LayoutColumn {
+  id: string;
+  ratio: string; // Width percentage
+  elements: PopupElement[];
+}
+```
 
-## Development Roadmap
+## License
 
-### MVP Phase (Form-based popup builder)
-- UI implementation
-- Basic customization (text, buttons, images, layout)
-- JSON storage & retrieval in LocalStorage
-- Live preview & code export
-- Predefined animations
+[MIT License](LICENSE)
 
-### Enhancements
-- Authentication (store templates in the cloud)
-- Cloud storage for templates & user settings
+## Contributing
 
-### Future Expansion
-- Drag-and-drop UI
-- Multi-step popups
-- More animations & integrations
-
-## Challenges & Solutions
-
-- Complexity of JSON storage: Keep a structured schema with versioning
-- Cross-browser compatibility: Ensure testing in multiple browsers
-- Performance concerns: Optimize real-time preview updates
-
-## Future Expansion
-
-- Integrations with marketing tools (HubSpot, Mailchimp, etc.)
-- AI-powered design suggestions
-- Collaboration tools (team-based popup editing & sharing)
-
-
-
-## List of Components (Perfectly Structured)
-
-🔹 Core UI Components (Reusable)
-✅ Button.tsx → Reusable button component
-✅ Input.tsx → Text input, checkbox, radio, select, textarea
-✅ Modal.tsx → Generic modal wrapper
-✅ Select.tsx → Dropdown component
-
-🔹 Sidebar & Preview
-✅ SidebarPanel.tsx → Popup customization panel (30%)
-✅ LivePreview.tsx → Popup live preview (70%)
-✅ CodeView.tsx → Displays exportable HTML, CSS, JS
-
-🔹 Popup Elements (Reusable & Customizable)
-✅ PopupContainer.tsx → Wrapper for popups
-✅ TextElement.tsx → Text inside popup
-✅ ButtonElement.tsx → Customizable buttons
-✅ ImageElement.tsx → Image uploads with Cloudinary
-✅ InputElement.tsx → Form fields (text, checkbox, radio, select, textarea)
-✅ RowColumnLayout.tsx → Handles row-column UI system
-
-🔹 Styling & Context Management
-✅ StyleCustomizer.tsx → Centralized component for all CSS customizations
-✅ PopupContext.tsx → Manages popup state across the app
-
-🔹 Utility & Hooks
-✅ useLocalStorage.ts → Handles local storage for templates
-✅ TemplateManager.ts → Manages saving, loading, resuming templates
-✅ exportPopup.ts → Generates exportable code
-
-
+Contributions are welcome! Please feel free to submit a Pull Request.
