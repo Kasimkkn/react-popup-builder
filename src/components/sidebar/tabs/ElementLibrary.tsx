@@ -62,10 +62,7 @@ const ElementLibrary: React.FC = () => {
     { type: 'text', icon: <Type className="h-5 w-5" />, label: 'Text' },
     { type: 'button', icon: <MousePointerClick className="h-5 w-5" />, label: 'Button' },
     { type: 'image', icon: <ImageIcon className="h-5 w-5" />, label: 'Image' },
-    { type: 'input', icon: <Pencil className="h-5 w-5" />, label: 'Text Input' },
-    { type: 'input', subtype: 'checkbox', icon: <CheckSquare className="h-5 w-5" />, label: 'Checkbox' },
-    { type: 'input', subtype: 'radio', icon: <Check className="h-5 w-5" />, label: 'Radio' },
-    { type: 'input', subtype: 'select', icon: <ListOrdered className="h-5 w-5" />, label: 'Select' },
+    { type: 'input', icon: <Pencil className="h-5 w-5" />, label: 'Input' }
   ];
 
   const handleElementClick = (type: ElementType, subtype?: string) => {
@@ -73,7 +70,7 @@ const ElementLibrary: React.FC = () => {
       if (subtype) {
         // For input elements with subtype, we'll create the element and then set its inputType
         const elementId = addElement(type, firstRowId, firstColumnId);
-        if (elementId) {
+        if (elementId as unknown as string) {
           // We need to update the element to set its inputType
           const updateEvent = new CustomEvent('updateElement', {
             detail: {
@@ -106,7 +103,7 @@ const ElementLibrary: React.FC = () => {
       if (subtype) {
         // For input elements with subtype, create and then update
         const elementId = addElement(elementTypeToAdd, selectedRowId, selectedColumnId);
-        if (elementId) {
+        if (elementId as unknown as string) {
           const updateEvent = new CustomEvent('updateElement', {
             detail: {
               elementId,
